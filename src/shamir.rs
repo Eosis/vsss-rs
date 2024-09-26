@@ -63,6 +63,25 @@ where
             .for_each(|c| *c = F::ZERO);
         Ok(ss)
     }
+
+    /// Create shares using a given polynomial. The secret reconstructed by calling
+    /// [combine_shares] will be the constant term of this polynomial (the element at
+    /// index 0).
+    /// WARNING: If you create shares from polynomial without using cryptographic randomness
+    /// you will drastically reduce the security of the scheme.
+    fn split_secret_with_polynomial(
+        threshold: usize,
+        limit: usize,
+        mut polynomial: Self::InnerPolynomial,
+    ) -> VsssResult<Self::ShareSet> {
+        check_params(threshold, limit)?;
+        let ss = create_shares(&polynomial, threshold, limit)?;
+        polynomial
+            .coefficients_mut()
+            .iter_mut()
+            .for_each(|c| *c = F::ZERO);
+        Ok(ss)
+    }
 }
 
 pub(crate) fn create_shares_with_participant_generator<F, P, I, S, SS, PP>(
@@ -97,7 +116,7 @@ where
     Ok(shares)
 }
 
-/// Create the shares for the specified polynomial
+/// Create the shares for the specified polynomial.
 pub(crate) fn create_shares<F, P, I, S, SS>(
     polynomial: &P,
     threshold: usize,
