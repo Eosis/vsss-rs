@@ -65,10 +65,9 @@ where
     }
 
     /// Create shares using a given polynomial. The secret reconstructed by calling
-    /// [combine_shares] will be the constant term of this polynomial (the element at
-    /// index 0).
-    /// WARNING: If you create shares from polynomial without using cryptographic randomness
-    /// you will drastically reduce the security of the scheme.
+    /// [combine_shares] will be the constant term of this polynomial (the element at index 0).
+    /// WARNING: If you create coefficients without cryptographically secure PRNGs,
+    /// the scheme may not be secure.
     fn split_secret_with_polynomial(
         threshold: usize,
         limit: usize,
@@ -213,6 +212,18 @@ where
         rng,
         participant_generator,
     )
+}
+
+#[cfg(any(feature = "alloc", feature = "std"))]
+/// Create shares using a given polynomial.
+/// WARNING: If you create coefficients without cryptographically secure PRNGs,
+/// the scheme may not be secure.
+pub fn split_secret_with_polynomial<F: PrimeField, I: ShareIdentifier, S: Share<Identifier = I>>(
+    threshold: usize,
+    limit: usize,
+    polynomial: Vec<F>
+) -> VsssResult<Vec<S>> {
+    StdVsssShamir::split_secret_with_polynomial(threshold, limit, polynomial)
 }
 
 #[cfg(any(feature = "alloc", feature = "std"))]
